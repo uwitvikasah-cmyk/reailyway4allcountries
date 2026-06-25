@@ -13,7 +13,7 @@ app.use(compression());
 app.use(express.static('public'));
 
 const JOBS_PER_PAGE = 20;
-const TOTAL_SITEMAPS = 2000; // 2M jobs / 1000 per sitemap = 2000 files
+const TOTAL_SITEMAPS = 200; // 2M jobs / 10000 per sitemap = 200 files
 
 // ── HTML RENDERER ─────────────────────────────────────────────────────────────
 function renderHTML({ title, meta, bodyContent, schema, canonical }) {
@@ -352,12 +352,12 @@ app.get('/sitemap-static.xml', (req, res) => {
   res.type('application/xml').send(xml);
 });
 
-// Job sitemaps (1000 jobs each)
+// Job sitemaps (10,000 jobs each)
 app.get('/sitemap-:num.xml', (req, res) => {
   const num = parseInt(req.params.num);
   if (!num || num < 1 || num > TOTAL_SITEMAPS) return res.status(404).send('Not found');
-  const start = (num - 1) * 1000 + 1;
-  const end = Math.min(num * 1000, TOTAL_JOBS);
+  const start = (num - 1) * 10000 + 1;
+  const end = Math.min(num * 10000, TOTAL_JOBS);
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
   for (let i = start; i <= end; i++) {
     xml += `\n<url><loc>${SITE_URL}/jobs/${i}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
@@ -388,8 +388,8 @@ app.get('/sitemap', (req, res) => {
       <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem;font-size:.88rem">
         <a href="/sitemap.xml" style="color:#00a080">📄 Sitemap Index</a>
         <a href="/sitemap-static.xml" style="color:#00a080">📄 Static Pages</a>
-        <a href="/sitemap-1.xml" style="color:#00a080">📄 Jobs 1–1,000</a>
-        <a href="/sitemap-2.xml" style="color:#00a080">📄 Jobs 1,001–2,000</a>
+        <a href="/sitemap-1.xml" style="color:#00a080">📄 Jobs 1–10,000</a>
+        <a href="/sitemap-2.xml" style="color:#00a080">📄 Jobs 10,001–20,000</a>
         <span style="color:#889">… ${TOTAL_SITEMAPS.toLocaleString()} sitemap files total</span>
       </div>
     </div>
