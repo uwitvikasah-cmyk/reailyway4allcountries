@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ── SITE URL — set SITE_URL env variable on Railway when domain changes ───────
-const SITE_URL = (process.env.SITE_URL || 'https://your-app.up.railway.app').replace(/\/$/, '');
+const SITE_URL = (process.env.SITE_URL || 'nexttonextjobs-production.up.railway.app').replace(/\/$/, '');
 
 app.use(compression());
 app.use(express.static('public'));
