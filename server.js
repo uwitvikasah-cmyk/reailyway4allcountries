@@ -1,21 +1,18 @@
 'use strict';
 const express = require('express');
 const compression = require('compression');
-const { getJobData, getJobSchema, TOTAL_JOBS } = require('./jobData');
+const { getJobData, getJobSchema, searchJobs, TOTAL_JOBS, GRAND_TOTAL, EXTRA_START_ID } = require('./jobData');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-// ── SITE URL — set SITE_URL env variable on Railway when domain changes ───────
-const SITE_URL = (process.env.SITE_URL || 'nexttonextjobs-production.up.railway.app').replace(/\/$/, '');
+const SITE_URL = (process.env.SITE_URL || 'https://nexttonextjobs-production.up.railway.app').replace(/\/$/, '');
 
 app.use(compression());
 app.use(express.static('public'));
 
-const JOBS_PER_PAGE = 20;
-const TOTAL_SITEMAPS = 200; // 2M jobs / 10000 per sitemap = 200 files
+const JOBS_PER_PAGE  = 20;
+const TOTAL_SITEMAPS = 200; // 200 x 10,000 = 2,000,000 base jobs
 
-// ── HTML RENDERER ─────────────────────────────────────────────────────────────
 function renderHTML({ title, meta, bodyContent, schema, canonical }) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -35,14 +32,12 @@ ${schema ? `<script type="application/ld+json">${JSON.stringify(schema, null, 2)
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f6fb;color:#1a1a2e;line-height:1.6}
 a{color:inherit;text-decoration:none}
-/* NAV */
 nav{background:#0a2540;color:#fff;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:62px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2)}
 .brand{font-size:1.2rem;font-weight:800;letter-spacing:-.5px}
 .brand .accent{color:#00d4aa}
 .nav-links{display:flex;gap:1.5rem;font-size:.85rem}
 .nav-links a{color:rgba(255,255,255,.8);transition:color .2s}
 .nav-links a:hover{color:#00d4aa}
-/* HERO */
 .hero{background:linear-gradient(135deg,#0a2540 0%,#1a3a5c 50%,#0d4f6b 100%);color:#fff;padding:3.5rem 1.5rem;text-align:center}
 .hero h1{font-size:clamp(1.8rem,4.5vw,3rem);font-weight:900;margin-bottom:.75rem;letter-spacing:-.5px}
 .hero h1 .accent{color:#00d4aa}
@@ -54,15 +49,12 @@ nav{background:#0a2540;color:#fff;padding:0 1.5rem;display:flex;align-items:cent
 .stat-bar{display:flex;justify-content:center;gap:2.5rem;flex-wrap:wrap;margin-top:2rem}
 .stat strong{display:block;font-size:1.6rem;color:#00d4aa;font-weight:900}
 .stat span{font-size:.78rem;opacity:.75}
-/* FILTERS */
-.filter-row{background:#fff;border-bottom:1px solid #e8ecf0;padding:.65rem 1.5rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
-.filter-wrap{max-width:960px;margin:0 auto;display:flex;gap:.5rem;flex-wrap:wrap;width:100%}
+.filter-row{background:#fff;border-bottom:1px solid #e8ecf0;padding:.65rem 1.5rem}
+.filter-wrap{max-width:960px;margin:0 auto;display:flex;gap:.5rem;flex-wrap:wrap;width:100%;align-items:center}
 .chip{padding:.35rem .9rem;border:1.5px solid #d0d8e4;border-radius:20px;font-size:.78rem;cursor:pointer;background:#fff;transition:all .2s;white-space:nowrap;font-weight:500}
 .chip.active,.chip:hover{background:#0a2540;color:#fff;border-color:#0a2540}
-/* LAYOUT */
 .container{max-width:960px;margin:0 auto;padding:1.5rem}
 .page-grid{display:grid;gap:1rem}
-/* JOB CARD */
 .job-card{background:#fff;border-radius:14px;padding:1.4rem 1.6rem;border:1.5px solid #e8ecf0;transition:border-color .2s,box-shadow .2s;display:flex;flex-direction:column;gap:.8rem}
 .job-card:hover{border-color:#00d4aa;box-shadow:0 4px 20px rgba(0,212,170,.1)}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap}
@@ -79,7 +71,6 @@ nav{background:#0a2540;color:#fff;padding:0 1.5rem;display:flex;align-items:cent
 .salary{font-weight:700;color:#0a2540;font-size:.9rem}
 .btn-apply{padding:.5rem 1.25rem;background:#0a2540;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.83rem;cursor:pointer;transition:background .2s}
 .btn-apply:hover{background:#00d4aa;color:#0a2540}
-/* JOB DETAIL */
 .job-detail{background:#fff;border-radius:14px;padding:2rem;border:1.5px solid #e8ecf0}
 .job-detail h1{font-size:1.65rem;font-weight:800;color:#0a2540;margin-bottom:.4rem}
 .detail-meta{display:flex;gap:.75rem;flex-wrap:wrap;margin:1rem 0;padding:1rem 0;border-top:1px solid #f0f3f8;border-bottom:1px solid #f0f3f8}
@@ -91,21 +82,19 @@ nav{background:#0a2540;color:#fff;padding:0 1.5rem;display:flex;align-items:cent
 .apply-box p{font-size:.85rem;color:#667;margin-bottom:1rem}
 .btn-big{padding:.85rem 2.5rem;background:#00d4aa;color:#0a2540;border:none;border-radius:10px;font-weight:800;font-size:1rem;cursor:pointer}
 .btn-big:hover{background:#00b899}
-/* PAGINATION */
 .pagination{display:flex;justify-content:center;gap:.4rem;margin:2rem 0;flex-wrap:wrap}
 .pagination a,.pagination span{padding:.5rem .9rem;border-radius:8px;border:1.5px solid #e0e6ee;font-size:.85rem;background:#fff}
 .pagination a:hover{border-color:#00d4aa;color:#006b55}
 .pagination .cur{background:#0a2540;color:#fff;border-color:#0a2540}
-/* BREADCRUMB */
 .bc{font-size:.82rem;color:#889;margin-bottom:1rem}
 .bc a{color:#00a080}
-/* INFO BOX */
 .info-box{background:#fff;border-radius:12px;padding:1.2rem 1.5rem;border-left:4px solid #00d4aa;margin-bottom:1rem;font-size:.88rem}
-/* FOOTER */
+.search-result-bar{background:#e0faf4;border-radius:10px;padding:.75rem 1.2rem;margin-bottom:1rem;font-size:.9rem;color:#006b55;font-weight:600}
+.no-results{text-align:center;padding:3rem 1rem;color:#889}
+.no-results .big{font-size:3rem;margin-bottom:1rem}
+.remote-banner{background:#e0faf4;border:1.5px solid #00d4aa;border-radius:10px;padding:.6rem 1rem;display:inline-flex;align-items:center;gap:.5rem;font-size:.82rem;font-weight:600;color:#006b55;margin-bottom:1rem}
 footer{background:#0a2540;color:rgba(255,255,255,.65);text-align:center;padding:1.5rem;font-size:.82rem;margin-top:3rem}
 footer a{color:#00d4aa}
-/* REMOTE BADGE BANNER */
-.remote-banner{background:#e0faf4;border:1.5px solid #00d4aa;border-radius:10px;padding:.6rem 1rem;display:inline-flex;align-items:center;gap:.5rem;font-size:.82rem;font-weight:600;color:#006b55;margin-bottom:1rem}
 @media(max-width:600px){.hero-form{flex-direction:column}.stat-bar{gap:1.25rem}.card-top{flex-direction:column}}
 </style>
 </head>
@@ -122,8 +111,8 @@ footer a{color:#00d4aa}
 </nav>
 ${bodyContent}
 <footer>
-  &copy; 2025 USARemoteJobs.io — <strong>2,000,000 Remote Jobs</strong> — Open to Applicants Worldwide |
-  <a href="/jobs">Browse All</a> · <a href="/jobs?type=fulltime">Full-time</a> · <a href="/jobs?type=contract">Contract</a> · <a href="/sitemap">Sitemap</a>
+  &copy; 2025 USARemoteJobs.io — <strong>2,050,000 Remote Jobs</strong> — Open to Applicants Worldwide |
+  <a href="/jobs">Browse All</a> · <a href="/jobs?type=fulltime">Full-time</a> · <a href="/sitemap">Sitemap</a>
 </footer>
 <script>
 function openApply(title){
@@ -134,90 +123,9 @@ function openApply(title){
 </html>`;
 }
 
-// ── HOME PAGE ─────────────────────────────────────────────────────────────────
-app.get('/', (req, res) => {
-  const featuredIds = [1,100,500,1000,5000,10000,50000,100000];
-  const featuredJobs = featuredIds.map(id => getJobData(id));
-
-  const cards = featuredJobs.map(job => `
-<a href="/jobs/${job.id}" style="display:block">
-<div class="job-card">
-  <div class="card-top">
-    <div><div class="card-title">${job.title}</div><div class="card-co">${job.company}</div></div>
-    <div class="badges">
-      <span class="badge b-remote">🌐 Remote</span>
-      <span class="badge b-type">${job.jobType}</span>
-    </div>
-  </div>
-  <div class="card-meta">
-    <span>📍 ${job.location}</span>
-    <span>🏭 ${job.industry}</span>
-    <span>📅 ${job.postedDate}</span>
-  </div>
-  <div class="card-desc">${job.description.substring(0,180)}...</div>
-  <div class="card-foot">
-    <span class="salary">${job.salary}</span>
-    <button class="btn-apply" onclick="event.preventDefault();openApply('${job.title.replace(/'/g,"\\'")}')">Apply Now</button>
-  </div>
-</div>
-</a>`).join('');
-
-  const schema = {
-    "@context":"https://schema.org",
-    "@type":"WebSite",
-    "name":"USARemoteJobs.io",
-    "url": SITE_URL,
-    "description":"2,000,000 remote job listings — USA-based companies, open to applicants worldwide",
-    "potentialAction":{"@type":"SearchAction","target":`${SITE_URL}/jobs?q={search_term_string}`,"query-input":"required name=search_term_string"}
-  };
-
-  const body = `
-<div class="hero">
-  <h1>2 Million <span class="accent">Remote Jobs</span> — USA Companies</h1>
-  <p>Work from anywhere in the world. All jobs are 100% remote, posted by top US companies, open to global applicants.</p>
-  <form action="/jobs" method="get" class="hero-form">
-    <input name="q" type="text" placeholder="Job title, skill, or company..."/>
-    <select name="type">
-      <option value="">All Types</option>
-      <option value="fulltime">Full-time</option>
-      <option value="contract">Contract</option>
-      <option value="parttime">Part-time</option>
-    </select>
-    <button type="submit">Search Jobs →</button>
-  </form>
-  <div class="stat-bar">
-    <div class="stat"><strong>2,000,000</strong><span>Remote Jobs</span></div>
-    <div class="stat"><strong>150+</strong><span>Top US Companies</span></div>
-    <div class="stat"><strong>100+</strong><span>Countries Welcome</span></div>
-    <div class="stat"><strong>200+</strong><span>Job Categories</span></div>
-    <div class="stat"><strong>$45K–$280K</strong><span>Salary Range</span></div>
-  </div>
-</div>
-<div class="container">
-  <div class="info-box">🌍 All jobs are <strong>100% remote</strong> — open to applicants from <strong>100+ countries</strong>. No visa sponsorship required for most roles.</div>
-  <h2 style="margin-bottom:1rem;font-size:1.2rem">Featured Remote Jobs</h2>
-  <div class="page-grid">${cards}</div>
-  <div style="text-align:center;margin-top:2rem">
-    <a href="/jobs" style="display:inline-block;padding:.9rem 2.5rem;background:#0a2540;color:#fff;border-radius:10px;font-weight:800">Browse All 2,000,000 Remote Jobs →</a>
-  </div>
-</div>`;
-
-  res.send(renderHTML({ title:'USARemoteJobs.io — 2,000,000 Remote Jobs | Work From Anywhere', meta:'Browse 2 million remote jobs at top US companies. Open to applicants worldwide — work from any country.', bodyContent:body, schema, canonical:'/' }));
-});
-
-// ── JOB LISTING PAGE ──────────────────────────────────────────────────────────
-app.get('/jobs', (req, res) => {
-  const page = Math.max(1, parseInt(req.query.page) || 1);
-  const typeFilter = req.query.type || 'all';
-  const q = req.query.q || '';
-
-  const start = (page - 1) * JOBS_PER_PAGE + 1;
-  const jobIds = [];
-  for (let i = start; i < start + JOBS_PER_PAGE && i <= TOTAL_JOBS; i++) jobIds.push(i);
-  const jobs = jobIds.map(id => getJobData(id));
-  const totalPages = Math.ceil(TOTAL_JOBS / JOBS_PER_PAGE);
-
-  const cards = jobs.map(job => `
+// ── Card HTML helper ──────────────────────────────────────────────────────────
+function jobCard(job) {
+  return `
 <a href="/jobs/${job.id}" style="display:block">
 <div class="job-card">
   <div class="card-top">
@@ -239,25 +147,138 @@ app.get('/jobs', (req, res) => {
     <button class="btn-apply" onclick="event.preventDefault();openApply('${job.title.replace(/'/g,"\\'")}')">Apply Now</button>
   </div>
 </div>
-</a>`).join('');
+</a>`;
+}
 
-  // Pagination
+function buildPagination(page, totalPages, q, typeFilter) {
+  const base = q ? `?q=${encodeURIComponent(q)}&page=` : `?type=${typeFilter}&page=`;
   const pages = [];
-  if (page > 1) pages.push(`<a href="/jobs?page=${page-1}&type=${typeFilter}">← Prev</a>`);
+  if (page > 1) pages.push(`<a href="/jobs${base}${page-1}">← Prev</a>`);
   const ps = Math.max(1, page-2), pe = Math.min(totalPages, page+2);
-  if (ps > 1) pages.push(`<a href="/jobs?page=1&type=${typeFilter}">1</a><span>…</span>`);
-  for (let p = ps; p <= pe; p++) pages.push(p===page?`<span class="cur">${p.toLocaleString()}</span>`:`<a href="/jobs?page=${p}&type=${typeFilter}">${p.toLocaleString()}</a>`);
-  if (pe < totalPages) pages.push(`<span>…</span><a href="/jobs?page=${totalPages}&type=${typeFilter}">${totalPages.toLocaleString()}</a>`);
-  if (page < totalPages) pages.push(`<a href="/jobs?page=${page+1}&type=${typeFilter}">Next →</a>`);
+  if (ps > 1) pages.push(`<a href="/jobs${base}1">1</a><span>…</span>`);
+  for (let p = ps; p <= pe; p++) pages.push(p===page ? `<span class="cur">${p.toLocaleString()}</span>` : `<a href="/jobs${base}${p}">${p.toLocaleString()}</a>`);
+  if (pe < totalPages) pages.push(`<span>…</span><a href="/jobs${base}${totalPages}">${totalPages.toLocaleString()}</a>`);
+  if (page < totalPages) pages.push(`<a href="/jobs${base}${page+1}">Next →</a>`);
+  return pages.join('');
+}
+
+// ── HOME ──────────────────────────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  const featuredIds = [1,100,500,1000,5000,10000,50000,100000];
+  const cards = featuredIds.map(id => jobCard(getJobData(id))).join('');
+
+  const schema = {
+    "@context":"https://schema.org","@type":"WebSite","name":"USARemoteJobs.io","url":SITE_URL,
+    "description":"2,050,000 remote job listings — USA companies, open to applicants worldwide",
+    "potentialAction":{"@type":"SearchAction","target":`${SITE_URL}/jobs?q={search_term_string}`,"query-input":"required name=search_term_string"}
+  };
+
+  const body = `
+<div class="hero">
+  <h1>2 Million+ <span class="accent">Remote Jobs</span> — USA Companies</h1>
+  <p>Work from anywhere in the world. All jobs are 100% remote, posted by top US companies, open to global applicants.</p>
+  <form action="/jobs" method="get" class="hero-form">
+    <input name="q" type="text" placeholder="Job title, company (e.g. Netflix, Google)..."/>
+    <select name="type">
+      <option value="">All Types</option>
+      <option value="fulltime">Full-time</option>
+      <option value="contract">Contract</option>
+      <option value="parttime">Part-time</option>
+    </select>
+    <button type="submit">Search Jobs →</button>
+  </form>
+  <div class="stat-bar">
+    <div class="stat"><strong>2,050,000</strong><span>Remote Jobs</span></div>
+    <div class="stat"><strong>200+</strong><span>Top US Companies</span></div>
+    <div class="stat"><strong>100+</strong><span>Countries Welcome</span></div>
+    <div class="stat"><strong>200+</strong><span>Job Categories</span></div>
+    <div class="stat"><strong>$45K–$280K</strong><span>Salary Range</span></div>
+  </div>
+</div>
+<div class="container">
+  <div class="info-box">🌍 All jobs are <strong>100% remote</strong> — open to applicants from <strong>100+ countries</strong>. Search by company name like <strong>Netflix</strong>, <strong>Google</strong>, <strong>Tesla</strong> and more.</div>
+  <h2 style="margin-bottom:1rem;font-size:1.2rem">Featured Remote Jobs</h2>
+  <div class="page-grid">${cards}</div>
+  <div style="text-align:center;margin-top:2rem">
+    <a href="/jobs" style="display:inline-block;padding:.9rem 2.5rem;background:#0a2540;color:#fff;border-radius:10px;font-weight:800">Browse All 2,050,000 Remote Jobs →</a>
+  </div>
+</div>`;
+
+  res.send(renderHTML({ title:'USARemoteJobs.io — 2M+ Remote Jobs | Work From Anywhere', meta:'Browse 2 million remote jobs at top US companies. Open to applicants worldwide.', bodyContent:body, schema, canonical:'/' }));
+});
+
+// ── JOB LISTING + SEARCH ─────────────────────────────────────────────────────
+app.get('/jobs', (req, res) => {
+  const page       = Math.max(1, parseInt(req.query.page) || 1);
+  const typeFilter = req.query.type || 'all';
+  const q          = (req.query.q || '').trim();
+
+  // ── SEARCH MODE ───────────────────────────────────────────────────────────
+  if (q) {
+    const result = searchJobs(q, page, JOBS_PER_PAGE);
+
+    if (!result || result.total === 0) {
+      const body = `
+<div class="hero" style="padding:1.75rem 1.5rem">
+  <h1 style="font-size:1.9rem">Search: <span class="accent">"${q}"</span></h1>
+  <form action="/jobs" method="get" class="hero-form" style="margin-top:1rem">
+    <input name="q" type="text" value="${q}" placeholder="Try: Netflix, Google, Engineer..."/>
+    <button type="submit">Search →</button>
+  </form>
+</div>
+<div class="container">
+  <div class="no-results">
+    <div class="big">🔍</div>
+    <h2>No jobs found for "${q}"</h2>
+    <p style="margin:.75rem 0 1.5rem">Try searching by company name (Netflix, Google, Tesla) or job title (Engineer, Designer)</p>
+    <a href="/jobs" style="color:#00a080;font-weight:600">← Browse All Jobs</a>
+  </div>
+</div>`;
+      return res.send(renderHTML({ title:`No results for "${q}" | USARemoteJobs.io`, meta:`No remote jobs found for ${q}.`, bodyContent:body, schema:null }));
+    }
+
+    const jobs  = result.ids.map(id => getJobData(id));
+    const cards = jobs.map(job => jobCard(job)).join('');
+    const pagination = buildPagination(result.page, result.totalPages, q, '');
+
+    const body = `
+<div class="hero" style="padding:1.75rem 1.5rem">
+  <h1 style="font-size:1.9rem">Remote Jobs at <span class="accent">"${q}"</span></h1>
+  <form action="/jobs" method="get" class="hero-form" style="margin-top:1rem">
+    <input name="q" type="text" value="${q}" placeholder="Try: Netflix, Google, Engineer..."/>
+    <button type="submit">Search →</button>
+  </form>
+</div>
+<div class="container">
+  <div class="search-result-bar">🔍 Found <strong>${result.total.toLocaleString()} remote jobs</strong> matching "${q}" — Page ${result.page} of ${result.totalPages.toLocaleString()}</div>
+  <div class="page-grid">${cards}</div>
+  <div class="pagination">${pagination}</div>
+</div>`;
+
+    return res.send(renderHTML({ title:`"${q}" Remote Jobs — ${result.total.toLocaleString()} Results | USARemoteJobs.io`, meta:`${result.total.toLocaleString()} remote jobs matching "${q}" at US companies. Apply now — open worldwide.`, bodyContent:body, schema:null }));
+  }
+
+  // ── BROWSE MODE ───────────────────────────────────────────────────────────
+  const start  = (page - 1) * JOBS_PER_PAGE + 1;
+  const jobIds = [];
+  for (let i = start; i < start + JOBS_PER_PAGE && i <= GRAND_TOTAL; i++) jobIds.push(i);
+  const jobs       = jobIds.map(id => getJobData(id));
+  const totalPages = Math.ceil(GRAND_TOTAL / JOBS_PER_PAGE);
+  const cards      = jobs.map(job => jobCard(job)).join('');
+  const pagination = buildPagination(page, totalPages, '', typeFilter);
 
   const body = `
 <div class="hero" style="padding:1.75rem 1.5rem">
-  <h1 style="font-size:1.9rem">Browse <span class="accent">2,000,000 Remote Jobs</span></h1>
+  <h1 style="font-size:1.9rem">Browse <span class="accent">2,050,000 Remote Jobs</span></h1>
   <p>Page ${page.toLocaleString()} of ${totalPages.toLocaleString()} — All USA companies, open worldwide</p>
+  <form action="/jobs" method="get" class="hero-form" style="margin-top:1rem">
+    <input name="q" type="text" placeholder="Search company or job title..."/>
+    <button type="submit">Search →</button>
+  </form>
 </div>
 <div class="filter-row">
   <div class="filter-wrap">
-    <a href="/jobs"><span class="chip ${typeFilter==='all'?'active':''}">All Jobs (2M)</span></a>
+    <a href="/jobs"><span class="chip ${typeFilter==='all'?'active':''}">All Jobs (2.05M)</span></a>
     <a href="/jobs?type=fulltime"><span class="chip ${typeFilter==='fulltime'?'active':''}">💼 Full-time</span></a>
     <a href="/jobs?type=contract"><span class="chip ${typeFilter==='contract'?'active':''}">📋 Contract</span></a>
     <a href="/jobs?type=parttime"><span class="chip ${typeFilter==='parttime'?'active':''}">⏰ Part-time</span></a>
@@ -265,27 +286,23 @@ app.get('/jobs', (req, res) => {
 </div>
 <div class="container">
   <div class="page-grid">${cards}</div>
-  <div class="pagination">${pages.join('')}</div>
+  <div class="pagination">${pagination}</div>
 </div>`;
 
-  res.send(renderHTML({ title:`Remote Jobs USA — Page ${page.toLocaleString()} | USARemoteJobs.io`, meta:`Browse 2,000,000 remote jobs at US companies. Page ${page}. Open to applicants from all countries.`, bodyContent:body, schema:null, canonical:`/jobs?page=${page}` }));
+  res.send(renderHTML({ title:`Remote Jobs USA — Page ${page.toLocaleString()} | USARemoteJobs.io`, meta:`Browse 2,050,000 remote jobs at US companies. Page ${page}. Open to applicants from all countries.`, bodyContent:body, schema:null, canonical:`/jobs?page=${page}` }));
 });
 
 // ── INDIVIDUAL JOB PAGE ───────────────────────────────────────────────────────
 app.get('/jobs/:id', (req, res) => {
   const id = parseInt(req.params.id);
-  if (!id || id < 1 || id > TOTAL_JOBS) {
+  if (!id || id < 1 || id > GRAND_TOTAL) {
     return res.status(404).send(renderHTML({ title:'Job Not Found | USARemoteJobs.io', meta:'Job not found.', bodyContent:`<div class="container" style="text-align:center;padding:4rem 1.5rem"><h1>404 — Job Not Found</h1><p style="margin:1rem 0 2rem;color:#667">This job may have been filled.</p><a href="/jobs" style="color:#00a080;font-weight:600">← Browse All Jobs</a></div>`, schema:null }));
   }
-
-  const job = getJobData(id);
+  const job    = getJobData(id);
   const schema = getJobSchema(job);
 
-  const relatedIds = [Math.max(1,id-2),Math.max(1,id-1),Math.min(TOTAL_JOBS,id+1),Math.min(TOTAL_JOBS,id+2)].filter(r=>r!==id).slice(0,3);
-  const relCards = relatedIds.map(rid => {
-    const rj = getJobData(rid);
-    return `<a href="/jobs/${rj.id}" style="display:block"><div class="job-card" style="padding:1rem"><div class="card-title" style="font-size:.93rem">${rj.title}</div><div class="card-co">${rj.company}</div><div style="margin-top:.5rem;display:flex;gap:.4rem;flex-wrap:wrap"><span class="badge b-remote" style="font-size:.7rem">🌐 Remote</span><span class="badge b-type" style="font-size:.7rem">${rj.jobType}</span></div></div></a>`;
-  }).join('');
+  const relatedIds = [Math.max(1,id-2),Math.max(1,id-1),Math.min(GRAND_TOTAL,id+1),Math.min(GRAND_TOTAL,id+2)].filter(r=>r!==id).slice(0,3);
+  const relCards   = relatedIds.map(rid => jobCard(getJobData(rid))).join('');
 
   const body = `
 <div class="container">
@@ -293,10 +310,7 @@ app.get('/jobs/:id', (req, res) => {
   <div class="remote-banner">🌍 100% Remote — Open to Applicants Worldwide</div>
   <div class="job-detail">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem">
-      <div>
-        <h1>${job.title}</h1>
-        <p style="font-size:1rem;color:#556;margin-top:.35rem">${job.company} · ${job.industry}</p>
-      </div>
+      <div><h1>${job.title}</h1><p style="font-size:1rem;color:#556;margin-top:.35rem">${job.company} · ${job.industry}</p></div>
       <div style="text-align:right">
         <span class="badge b-remote" style="font-size:.85rem;padding:.4rem 1rem">🌐 Remote Worldwide</span>
         <div style="font-size:.78rem;color:#889;margin-top:.4rem">Job ID: USA-${String(job.id).padStart(7,'0')}</div>
@@ -322,7 +336,7 @@ app.get('/jobs/:id', (req, res) => {
     <div class="page-grid">${relCards}</div>
   </div>
   <div style="text-align:center;margin-top:1.5rem">
-    <a href="/jobs" style="color:#00a080;font-weight:600">← Browse All 2,000,000 Remote Jobs</a>
+    <a href="/jobs" style="color:#00a080;font-weight:600">← Browse All 2,050,000 Remote Jobs</a>
   </div>
 </div>`;
 
@@ -332,81 +346,78 @@ app.get('/jobs/:id', (req, res) => {
 // ── SITEMAP INDEX ─────────────────────────────────────────────────────────────
 app.get('/sitemap.xml', (req, res) => {
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
-  // Static pages sitemap
   xml += `\n<sitemap><loc>${SITE_URL}/sitemap-static.xml</loc></sitemap>`;
-  // Job sitemaps
-  for (let i = 1; i <= TOTAL_SITEMAPS; i++) {
-    xml += `\n<sitemap><loc>${SITE_URL}/sitemap-${i}.xml</loc></sitemap>`;
-  }
+  for (let i = 1; i <= TOTAL_SITEMAPS; i++) xml += `\n<sitemap><loc>${SITE_URL}/sitemap-${i}.xml</loc></sitemap>`;
+  // Extra company sitemaps
+  xml += `\n<sitemap><loc>${SITE_URL}/sitemap-extra.xml</loc></sitemap>`;
   xml += `\n</sitemapindex>`;
   res.type('application/xml').send(xml);
 });
 
-// Static pages sitemap
 app.get('/sitemap-static.xml', (req, res) => {
-  const pages = ['/', '/jobs', '/jobs?type=fulltime', '/jobs?type=contract', '/jobs?type=parttime', '/sitemap'];
+  const pages = ['/','/jobs','/jobs?type=fulltime','/jobs?type=contract','/jobs?type=parttime','/sitemap'];
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
-  pages.forEach(p => {
-    xml += `\n<url><loc>${SITE_URL}${p}</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`;
-  });
+  pages.forEach(p => { xml += `\n<url><loc>${SITE_URL}${p}</loc><changefreq>daily</changefreq><priority>1.0</priority></url>`; });
   xml += `\n</urlset>`;
   res.type('application/xml').send(xml);
 });
 
-// Job sitemaps (10,000 jobs each)
+app.get('/sitemap-extra.xml', (req, res) => {
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
+  for (let i = EXTRA_START_ID; i <= GRAND_TOTAL; i++) xml += `\n<url><loc>${SITE_URL}/jobs/${i}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
+  xml += `\n</urlset>`;
+  res.type('application/xml').send(xml);
+});
+
 app.get('/sitemap-:num.xml', (req, res) => {
   const num = parseInt(req.params.num);
   if (!num || num < 1 || num > TOTAL_SITEMAPS) return res.status(404).send('Not found');
   const start = (num - 1) * 10000 + 1;
-  const end = Math.min(num * 10000, TOTAL_JOBS);
+  const end   = Math.min(num * 10000, TOTAL_JOBS);
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
-  for (let i = start; i <= end; i++) {
-    xml += `\n<url><loc>${SITE_URL}/jobs/${i}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
-  }
+  for (let i = start; i <= end; i++) xml += `\n<url><loc>${SITE_URL}/jobs/${i}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
   xml += `\n</urlset>`;
   res.type('application/xml').send(xml);
 });
 
-// ── SITEMAP HTML PAGE ─────────────────────────────────────────────────────────
+// ── SITEMAP PAGE ──────────────────────────────────────────────────────────────
 app.get('/sitemap', (req, res) => {
   const body = `
 <div class="container">
   <h1 style="margin-bottom:1rem">Sitemap — USARemoteJobs.io</h1>
-  <div class="info-box">📌 2,000,000 remote job pages + ${TOTAL_SITEMAPS.toLocaleString()} XML sitemap files for search engines</div>
+  <div class="info-box">📌 2,050,000 remote job pages + XML sitemaps for all search engines</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:1rem">
     <div class="job-card">
       <div class="card-title">Main Pages</div>
       <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem;font-size:.88rem">
         <a href="/" style="color:#00a080">🏠 Home</a>
-        <a href="/jobs" style="color:#00a080">📋 All Remote Jobs (2,000,000)</a>
+        <a href="/jobs" style="color:#00a080">📋 All Remote Jobs (2,050,000)</a>
         <a href="/jobs?type=fulltime" style="color:#00a080">💼 Full-time Remote</a>
         <a href="/jobs?type=contract" style="color:#00a080">📋 Contract Remote</a>
-        <a href="/jobs?type=parttime" style="color:#00a080">⏰ Part-time Remote</a>
       </div>
     </div>
     <div class="job-card">
       <div class="card-title">XML Sitemaps</div>
       <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem;font-size:.88rem">
         <a href="/sitemap.xml" style="color:#00a080">📄 Sitemap Index</a>
-        <a href="/sitemap-static.xml" style="color:#00a080">📄 Static Pages</a>
         <a href="/sitemap-1.xml" style="color:#00a080">📄 Jobs 1–10,000</a>
         <a href="/sitemap-2.xml" style="color:#00a080">📄 Jobs 10,001–20,000</a>
-        <span style="color:#889">… ${TOTAL_SITEMAPS.toLocaleString()} sitemap files total</span>
+        <a href="/sitemap-extra.xml" style="color:#00a080">📄 Extra Company Jobs</a>
+        <span style="color:#889">200 sitemap files total</span>
       </div>
     </div>
     <div class="job-card">
       <div class="card-title">Job Range</div>
       <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem;font-size:.88rem">
         <a href="/jobs/1" style="color:#00a080">Job #1</a>
-        <a href="/jobs/500000" style="color:#00a080">Job #500,000</a>
         <a href="/jobs/1000000" style="color:#00a080">Job #1,000,000</a>
-        <a href="/jobs/2000000" style="color:#00a080">Job #2,000,000 (Last)</a>
+        <a href="/jobs/2000000" style="color:#00a080">Job #2,000,000</a>
+        <a href="/jobs/2050000" style="color:#00a080">Job #2,050,000 (Last)</a>
       </div>
     </div>
   </div>
 </div>`;
-
-  res.send(renderHTML({ title:'Sitemap | USARemoteJobs.io', meta:'Sitemap for USARemoteJobs.io with 2 million remote job listings.', bodyContent:body, schema:null }));
+  res.send(renderHTML({ title:'Sitemap | USARemoteJobs.io', meta:'Sitemap for USARemoteJobs.io with 2,050,000 remote job listings.', bodyContent:body, schema:null }));
 });
 
 // ── ROBOTS.TXT ────────────────────────────────────────────────────────────────
@@ -417,23 +428,28 @@ app.get('/robots.txt', (req, res) => {
 // ── API ───────────────────────────────────────────────────────────────────────
 app.get('/api/jobs/:id', (req, res) => {
   const id = parseInt(req.params.id);
-  if (!id || id < 1 || id > TOTAL_JOBS) return res.status(404).json({ error:'Job not found' });
-  res.json({ job: getJobData(id), schema: getJobSchema(id) });
+  if (!id || id < 1 || id > GRAND_TOTAL) return res.status(404).json({ error:'Job not found' });
+  const job = getJobData(id);
+  res.json({ job, schema: getJobSchema(job) });
 });
 
 app.get('/api/jobs', (req, res) => {
-  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const page  = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(50, parseInt(req.query.limit) || 20);
+  const q     = (req.query.q || '').trim();
+  if (q) {
+    const result = searchJobs(q, page, limit);
+    if (!result) return res.json({ page, limit, total:0, jobs:[] });
+    return res.json({ page:result.page, limit, total:result.total, jobs: result.ids.map(id => getJobData(id)) });
+  }
   const start = (page - 1) * limit + 1;
-  const jobs = [];
-  for (let i = start; i < start + limit && i <= TOTAL_JOBS; i++) jobs.push(getJobData(i));
-  res.json({ page, limit, total: TOTAL_JOBS, jobs });
+  const jobs  = [];
+  for (let i = start; i < start + limit && i <= GRAND_TOTAL; i++) jobs.push(getJobData(i));
+  res.json({ page, limit, total: GRAND_TOTAL, jobs });
 });
 
-// ── START ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`🇺🇸 USARemoteJobs.io running on port ${PORT}`);
+  console.log(`🇺🇸 USARemoteJobs.io on port ${PORT}`);
   console.log(`🌐 Site URL: ${SITE_URL}`);
-  console.log(`📋 ${TOTAL_JOBS.toLocaleString()} remote job pages ready`);
-  console.log(`🗺  ${TOTAL_SITEMAPS.toLocaleString()} sitemap files`);
+  console.log(`📋 ${GRAND_TOTAL.toLocaleString()} total jobs (${TOTAL_JOBS.toLocaleString()} base + 50,000 extra)`);
 });
