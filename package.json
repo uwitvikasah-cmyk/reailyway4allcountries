@@ -1,0 +1,19 @@
+{
+  "name": "usa-remote-jobs",
+  "version": "1.0.0",
+  "description": "2,000,000 Remote Jobs USA Portal — Open to Applicants Worldwide",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "compression": "^1.7.4"
+  },
+  "keywords": ["remote jobs", "usa jobs", "work from anywhere"],
+  "license": "MIT"
+}
