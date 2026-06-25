@@ -4,7 +4,6 @@ const TOTAL_JOBS = 2000000; // 20 lakh jobs
 
 // ── Job Titles (200+) ────────────────────────────────────────────────────────
 const jobTitles = [
-  // Engineering
   'Software Engineer','Senior Software Engineer','Staff Software Engineer','Principal Software Engineer',
   'Frontend Developer','Senior Frontend Developer','Backend Developer','Senior Backend Developer',
   'Full Stack Developer','Senior Full Stack Developer','Lead Software Engineer','Software Architect',
@@ -20,37 +19,28 @@ const jobTitles = [
   'Game Developer','Unity Developer','Unreal Engine Developer','Graphics Programmer',
   'Database Engineer','DBA','PostgreSQL DBA','MySQL DBA','NoSQL Engineer',
   'API Developer','Microservices Engineer','Integration Engineer','ETL Developer',
-  // Data & Analytics
   'Data Scientist','Senior Data Scientist','Principal Data Scientist','Data Analyst',
   'Senior Data Analyst','Business Intelligence Analyst','BI Developer','Analytics Engineer',
   'Quantitative Analyst','Research Scientist','Applied Scientist','ML Researcher',
   'Data Architect','Big Data Engineer','Spark Engineer','Kafka Engineer',
-  // Product & Design
   'Product Manager','Senior Product Manager','Principal Product Manager','Group Product Manager',
   'Product Designer','Senior Product Designer','UX Designer','UI Designer','UX Researcher',
   'UX/UI Designer','Design Lead','Creative Director','Visual Designer','Interaction Designer',
   'Brand Designer','Motion Designer','Graphic Designer','Web Designer',
-  // Marketing & Growth
   'Digital Marketing Manager','SEO Specialist','SEM Specialist','Content Strategist',
   'Content Writer','Copywriter','Technical Writer','Social Media Manager',
   'Email Marketing Specialist','Growth Hacker','Performance Marketer','Demand Gen Manager',
   'Product Marketing Manager','Brand Manager','Marketing Analyst','CRO Specialist',
-  // Sales & Business Dev
   'Account Executive','Senior Account Executive','Enterprise Account Executive',
   'Sales Development Representative','Business Development Manager','Partnerships Manager',
   'Customer Success Manager','Customer Success Engineer','Solutions Engineer','Sales Engineer',
-  // Finance & Operations
   'Financial Analyst','Senior Financial Analyst','FP&A Analyst','Accounting Manager',
   'Controller','CFO','Revenue Operations Manager','Sales Operations Analyst',
   'Operations Manager','Project Manager','Program Manager','Scrum Master','Agile Coach',
-  // HR & Recruiting
   'Technical Recruiter','Senior Recruiter','Talent Acquisition Manager','HR Manager',
   'People Operations Manager','Compensation Analyst','L&D Specialist',
-  // Customer Support
   'Customer Support Specialist','Technical Support Engineer','Support Team Lead',
-  // Legal & Compliance
   'Legal Counsel','Privacy Counsel','Compliance Manager','Risk Analyst',
-  // Healthcare & Science
   'Clinical Data Manager','Bioinformatics Scientist','Health Informatics Analyst',
   'Medical Writer','Regulatory Affairs Specialist','Clinical Research Associate',
 ];
@@ -71,22 +61,22 @@ const companies = [
   'Peloton','Calm','Headspace','Noom','Hims','Ro','Forward','Carbon Health',
   'Duolingo','Coursera','Udemy','Chegg','Kahoot','Quizlet','Masterclass',
   'Twitch','Discord','Reddit','Pinterest','Snap','TikTok','Bytedance',
-  'Palantir','Anduril','Shield AI','Rebellion Defense','Samsara','Matterport',
+  'Anduril','Shield AI','Rebellion Defense','Samsara','Matterport',
   'Waymo','Cruise','Aurora','Rivian','Lucid Motors','Bird','Lime',
   'SpaceX','Relativity Space','Planet Labs','Rocket Lab','Astranis',
   'Vercel','Netlify','Supabase','PlanetScale','Neon','Railway','Render',
   'Grafana','New Relic','PagerDuty','OpsGenie','StatusPage','Incident.io',
   'Auth0','Okta','CrowdStrike','SentinelOne','Snyk','Wiz','Lacework',
-  'Carta','Equity Bee','AngelList','Gust','Visible','Landscape',
+  'Carta','AngelList','Gust','Visible','Landscape',
   'Loom','Miro','Whimsical','Lucidchart','Storybook','Chromatic',
   'Postman','Insomnia','RapidAPI','Kong','Apigee','MuleSoft',
   'dbt Labs','Airbyte','Fivetran','Segment','mParticle','Rudderstack',
   'LaunchDarkly','Split.io','Optimizely','Amplitude','Mixpanel','Heap',
   'Contentful','Sanity','Strapi','Ghost','WordPress VIP','Webflow',
-  'Algolia','Typesense','Elasticsearch','Solr','Meilisearch',
+  'Algolia','Typesense','Meilisearch',
 ];
 
-// ── USA States / Locations (all remote but listing state) ────────────────────
+// ── USA States / Locations ────────────────────────────────────────────────────
 const usaStates = [
   'Remote — California, USA','Remote — New York, USA','Remote — Texas, USA',
   'Remote — Washington, USA','Remote — Florida, USA','Remote — Illinois, USA',
@@ -115,7 +105,7 @@ const industries = [
 // ── Job Types ─────────────────────────────────────────────────────────────────
 const jobTypes = ['Full-time','Contract','Part-time','Freelance','Full-time Contract'];
 
-// ── Experience Levels ─────────────────────────────────────────────────────────
+// ── Experience Levels (display labels — separate from schema enum) ─────────────
 const experienceLevels = [
   'Entry Level (0-2 yrs)','Mid Level (2-5 yrs)','Senior Level (5-8 yrs)',
   'Lead / Staff (8+ yrs)','Principal / Director (10+ yrs)',
@@ -128,6 +118,16 @@ const salaryRanges = [
   '$180,000 – $240,000/yr','$200,000 – $280,000/yr','$60 – $80/hr','$80 – $120/hr',
   '$120 – $160/hr','$160 – $200/hr','Competitive + Equity','$90,000 – $130,000/yr',
   '$110,000 – $150,000/yr','$70,000 – $100,000/yr',
+];
+
+// Salary min/max for schema baseSalary (numeric, no text ranges)
+const salarySchema = [
+  {min:45000,max:65000},{min:60000,max:85000},{min:80000,max:110000},
+  {min:100000,max:140000},{min:130000,max:170000},{min:150000,max:200000},
+  {min:180000,max:240000},{min:200000,max:280000},{min:120000,max:160000},
+  {min:160000,max:200000},{min:200000,max:240000},{min:240000,max:280000},
+  {min:120000,max:160000},{min:90000,max:130000},{min:110000,max:150000},
+  {min:70000,max:100000},
 ];
 
 // ── All Countries for applicantLocationRequirements ───────────────────────────
@@ -234,22 +234,12 @@ We're on a mission to transform the ${industry} industry. As a ${title}, you'll 
 • Latest MacBook Pro + accessories provided`,
 ];
 
+// ── Fixed Dates for ALL posts ─────────────────────────────────────────────────
+const FIXED_DATE_POSTED   = '2025-06-25';
+const FIXED_VALID_THROUGH = '2025-12-22';
+
 // ── Deterministic helpers ─────────────────────────────────────────────────────
 function pick(arr, seed) { return arr[Math.abs(seed) % arr.length]; }
-
-function getPostedDate(id) {
-  // Spread over last 18 months
-  const daysAgo = (id % 540);
-  const d = new Date('2025-01-01');
-  d.setDate(d.getDate() - daysAgo);
-  return d.toISOString().split('T')[0];
-}
-
-function getValidThrough(postedDate) {
-  const d = new Date(postedDate);
-  d.setDate(d.getDate() + 90);
-  return d.toISOString().split('T')[0];
-}
 
 // ── Main getJobData ───────────────────────────────────────────────────────────
 function getJobData(id) {
@@ -261,33 +251,61 @@ function getJobData(id) {
   const s6 = id * 37 + 19;
   const s7 = id * 41 + 83;
 
-  const title    = pick(jobTitles, s1);
-  const company  = pick(companies, s2);
-  const location = pick(usaStates, s3);
-  const industry = pick(industries, s4);
-  const jobType  = pick(jobTypes, s5);
+  const title      = pick(jobTitles, s1);
+  const company    = pick(companies, s2);
+  const location   = pick(usaStates, s3);
+  const industry   = pick(industries, s4);
+  const jobType    = pick(jobTypes, s5);
   const experience = pick(experienceLevels, s6);
-  const salary   = pick(salaryRanges, s7);
-  const postedDate = getPostedDate(id);
-  const descFn   = pick(descTemplates, id * 3 + 7);
+  const salary     = pick(salaryRanges, s7);
+  const descFn     = pick(descTemplates, id * 3 + 7);
   const description = descFn(title, company, industry);
 
-  return { id, title, company, location, industry, jobType, experience, salary, postedDate, description, isRemote: true };
+  return {
+    id, title, company, location, industry, jobType,
+    experience, salary,
+    postedDate: FIXED_DATE_POSTED,
+    validThrough: FIXED_VALID_THROUGH,
+    description,
+    isRemote: true
+  };
 }
 
-// ── JSON-LD JobPosting Schema with ALL countries ──────────────────────────────
+// ── JSON-LD JobPosting Schema ─────────────────────────────────────────────────
 function getJobSchema(job) {
+  const s7 = job.id * 41 + 83;
+  const salaryData = pick(salarySchema, s7);
+
+  // Map jobType to valid schema.org employmentType enum
+  let employmentType;
+  switch (job.jobType) {
+    case 'Full-time':          employmentType = 'FULL_TIME'; break;
+    case 'Part-time':          employmentType = 'PART_TIME'; break;
+    case 'Contract':           employmentType = 'CONTRACTOR'; break;
+    case 'Full-time Contract': employmentType = 'FULL_TIME'; break;
+    case 'Freelance':          employmentType = 'CONTRACTOR'; break;
+    default:                   employmentType = 'FULL_TIME';
+  }
+
+  // Map experienceLevel to valid OccupationalExperienceRequirements
+  let monthsOfExperience;
+  switch (job.experience) {
+    case 'Entry Level (0-2 yrs)':          monthsOfExperience = 12;  break;
+    case 'Mid Level (2-5 yrs)':            monthsOfExperience = 24;  break;
+    case 'Senior Level (5-8 yrs)':         monthsOfExperience = 60;  break;
+    case 'Lead / Staff (8+ yrs)':          monthsOfExperience = 96;  break;
+    case 'Principal / Director (10+ yrs)': monthsOfExperience = 120; break;
+    default:                               monthsOfExperience = 24;
+  }
+
   return {
     "@context": "https://schema.org/",
     "@type": "JobPosting",
     "title": job.title,
     "description": job.description,
     "datePosted": job.postedDate,
-    "validThrough": getValidThrough(job.postedDate),
-    "employmentType": job.jobType === 'Full-time' ? 'FULL_TIME'
-                    : job.jobType === 'Part-time' ? 'PART_TIME'
-                    : job.jobType === 'Contract' || job.jobType === 'Full-time Contract' ? 'CONTRACTOR'
-                    : 'OTHER',
+    "validThrough": job.validThrough,
+    "employmentType": employmentType,
     "hiringOrganization": {
       "@type": "Organization",
       "name": job.company
@@ -309,10 +327,15 @@ function getJobSchema(job) {
       "currency": "USD",
       "value": {
         "@type": "QuantitativeValue",
+        "minValue": salaryData.min,
+        "maxValue": salaryData.max,
         "unitText": "YEAR"
       }
     },
-    "experienceRequirements": job.experience,
+    "experienceRequirements": {
+      "@type": "OccupationalExperienceRequirements",
+      "monthsOfExperience": monthsOfExperience
+    },
     "industry": job.industry,
     "identifier": {
       "@type": "PropertyValue",
