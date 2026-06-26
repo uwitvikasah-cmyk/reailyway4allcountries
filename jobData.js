@@ -1,8 +1,7 @@
 'use strict';
 
-const TOTAL_JOBS = 2000000; // 20 lakh base jobs (fixed, nahi badlenge)
+const TOTAL_JOBS = 2000000;
 
-// ── New companies to add (50 new — 1000 jobs each = 50,000 extra) ─────────────
 const newCompanies = [
   'Youtube','CostCo','Disney','Wayfair','Starbucks','Walmart','American Express',
   'Wells Fargo','Aetna','CVS','Hobby Lobby','Home Depot','Target','Yelp','Crocs',
@@ -13,11 +12,10 @@ const newCompanies = [
   'Front','Automox','Veeva Systems','MURAL'
 ];
 const EXTRA_JOBS_PER_COMPANY = 1000;
-const EXTRA_START_ID = TOTAL_JOBS + 1; // starts at 2000001
-const TOTAL_EXTRA_JOBS = newCompanies.length * EXTRA_JOBS_PER_COMPANY; // 50000
-const GRAND_TOTAL = TOTAL_JOBS + TOTAL_EXTRA_JOBS; // 2050000
+const EXTRA_START_ID = TOTAL_JOBS + 1;
+const TOTAL_EXTRA_JOBS = newCompanies.length * EXTRA_JOBS_PER_COMPANY;
+const GRAND_TOTAL = TOTAL_JOBS + TOTAL_EXTRA_JOBS;
 
-// ── Job Titles (200+) ────────────────────────────────────────────────────────
 const jobTitles = [
   'Software Engineer','Senior Software Engineer','Staff Software Engineer','Principal Software Engineer',
   'Frontend Developer','Senior Frontend Developer','Backend Developer','Senior Backend Developer',
@@ -60,9 +58,7 @@ const jobTitles = [
   'Medical Writer','Regulatory Affairs Specialist','Clinical Research Associate',
 ];
 
-// ── All Companies (existing + new) ───────────────────────────────────────────
 const companies = [
-  // Original
   'Google','Meta','Apple','Amazon','Microsoft','Netflix','Spotify','Shopify','Stripe',
   'Tesla','American Airlines','Delta Airlines','United Airlines','Southwest Airlines',
   'Airbnb','Uber','Lyft','Twitter','LinkedIn','Salesforce','Slack','Zoom','Dropbox',
@@ -91,11 +87,9 @@ const companies = [
   'LaunchDarkly','Split.io','Optimizely','Amplitude','Mixpanel','Heap',
   'Contentful','Sanity','Strapi','Ghost','WordPress VIP','Webflow',
   'Algolia','Typesense','Meilisearch',
-  // New companies added
   ...newCompanies
 ];
 
-// ── USA States / Locations ────────────────────────────────────────────────────
 const usaStates = [
   'Remote — California, USA','Remote — New York, USA','Remote — Texas, USA',
   'Remote — Washington, USA','Remote — Florida, USA','Remote — Illinois, USA',
@@ -112,7 +106,6 @@ const usaStates = [
   'Remote — Atlanta, GA','Remote — Los Angeles, CA','Remote — Miami, FL',
 ];
 
-// ── Industries ───────────────────────────────────────────────────────────────
 const industries = [
   'Software & SaaS','FinTech','HealthTech','EdTech','E-Commerce','Cybersecurity',
   'Artificial Intelligence','Blockchain & Web3','Cloud Computing','DevTools',
@@ -146,50 +139,147 @@ const salarySchema = [
 ];
 
 const allCountries = [
-  'United States','United Kingdom','Canada','Australia','Germany','France','Netherlands',
-  'Sweden','Norway','Denmark','Finland','Switzerland','Austria','Belgium','Ireland',
-  'Spain','Portugal','Italy','Poland','Czech Republic','Romania','Hungary','Bulgaria',
-  'Croatia','Slovakia','Slovenia','Estonia','Latvia','Lithuania','Greece','Cyprus',
-  'Malta','Luxembourg','Iceland','Liechtenstein','Monaco','San Marino',
-  'Brazil','Argentina','Chile','Colombia','Mexico','Peru','Uruguay','Ecuador',
-  'Costa Rica','Panama','Paraguay','Bolivia','Venezuela','Honduras','Guatemala',
-  'India','Pakistan','Bangladesh','Sri Lanka','Nepal','Philippines','Vietnam',
-  'Thailand','Indonesia','Malaysia','Singapore','South Korea','Japan','China',
-  'Taiwan','Hong Kong','Myanmar','Cambodia','Laos','Mongolia','Bhutan',
-  'Nigeria','Kenya','South Africa','Ghana','Egypt','Morocco','Tunisia','Ethiopia',
-  'Tanzania','Uganda','Rwanda','Senegal','Cameroon','Ivory Coast','Mozambique',
-  'New Zealand','Fiji','Papua New Guinea','Samoa','Tonga',
-  'Israel','UAE','Saudi Arabia','Jordan','Lebanon','Turkey','Georgia','Armenia',
-  'Ukraine','Russia','Kazakhstan','Uzbekistan','Belarus','Serbia','Albania',
-  'Bosnia and Herzegovina','North Macedonia','Kosovo','Montenegro','Moldova',
+  { name: 'United States',          sameAs: 'https://en.wikipedia.org/wiki/United_States' },
+  { name: 'United Kingdom',         sameAs: 'https://en.wikipedia.org/wiki/United_Kingdom' },
+  { name: 'Canada',                 sameAs: 'https://en.wikipedia.org/wiki/Canada' },
+  { name: 'Australia',              sameAs: 'https://en.wikipedia.org/wiki/Australia' },
+  { name: 'Germany',                sameAs: 'https://en.wikipedia.org/wiki/Germany' },
+  { name: 'France',                 sameAs: 'https://en.wikipedia.org/wiki/France' },
+  { name: 'Netherlands',            sameAs: 'https://en.wikipedia.org/wiki/Netherlands' },
+  { name: 'Sweden',                 sameAs: 'https://en.wikipedia.org/wiki/Sweden' },
+  { name: 'Norway',                 sameAs: 'https://en.wikipedia.org/wiki/Norway' },
+  { name: 'Denmark',                sameAs: 'https://en.wikipedia.org/wiki/Denmark' },
+  { name: 'Finland',                sameAs: 'https://en.wikipedia.org/wiki/Finland' },
+  { name: 'Switzerland',            sameAs: 'https://en.wikipedia.org/wiki/Switzerland' },
+  { name: 'Austria',                sameAs: 'https://en.wikipedia.org/wiki/Austria' },
+  { name: 'Belgium',                sameAs: 'https://en.wikipedia.org/wiki/Belgium' },
+  { name: 'Ireland',                sameAs: 'https://en.wikipedia.org/wiki/Ireland' },
+  { name: 'Spain',                  sameAs: 'https://en.wikipedia.org/wiki/Spain' },
+  { name: 'Portugal',               sameAs: 'https://en.wikipedia.org/wiki/Portugal' },
+  { name: 'Italy',                  sameAs: 'https://en.wikipedia.org/wiki/Italy' },
+  { name: 'Poland',                 sameAs: 'https://en.wikipedia.org/wiki/Poland' },
+  { name: 'Czech Republic',         sameAs: 'https://en.wikipedia.org/wiki/Czech_Republic' },
+  { name: 'Romania',                sameAs: 'https://en.wikipedia.org/wiki/Romania' },
+  { name: 'Hungary',                sameAs: 'https://en.wikipedia.org/wiki/Hungary' },
+  { name: 'Bulgaria',               sameAs: 'https://en.wikipedia.org/wiki/Bulgaria' },
+  { name: 'Croatia',                sameAs: 'https://en.wikipedia.org/wiki/Croatia' },
+  { name: 'Slovakia',               sameAs: 'https://en.wikipedia.org/wiki/Slovakia' },
+  { name: 'Slovenia',               sameAs: 'https://en.wikipedia.org/wiki/Slovenia' },
+  { name: 'Estonia',                sameAs: 'https://en.wikipedia.org/wiki/Estonia' },
+  { name: 'Latvia',                 sameAs: 'https://en.wikipedia.org/wiki/Latvia' },
+  { name: 'Lithuania',              sameAs: 'https://en.wikipedia.org/wiki/Lithuania' },
+  { name: 'Greece',                 sameAs: 'https://en.wikipedia.org/wiki/Greece' },
+  { name: 'Cyprus',                 sameAs: 'https://en.wikipedia.org/wiki/Cyprus' },
+  { name: 'Malta',                  sameAs: 'https://en.wikipedia.org/wiki/Malta' },
+  { name: 'Luxembourg',             sameAs: 'https://en.wikipedia.org/wiki/Luxembourg' },
+  { name: 'Iceland',                sameAs: 'https://en.wikipedia.org/wiki/Iceland' },
+  { name: 'Liechtenstein',          sameAs: 'https://en.wikipedia.org/wiki/Liechtenstein' },
+  { name: 'Monaco',                 sameAs: 'https://en.wikipedia.org/wiki/Monaco' },
+  { name: 'San Marino',             sameAs: 'https://en.wikipedia.org/wiki/San_Marino' },
+  { name: 'Brazil',                 sameAs: 'https://en.wikipedia.org/wiki/Brazil' },
+  { name: 'Argentina',              sameAs: 'https://en.wikipedia.org/wiki/Argentina' },
+  { name: 'Chile',                  sameAs: 'https://en.wikipedia.org/wiki/Chile' },
+  { name: 'Colombia',               sameAs: 'https://en.wikipedia.org/wiki/Colombia' },
+  { name: 'Mexico',                 sameAs: 'https://en.wikipedia.org/wiki/Mexico' },
+  { name: 'Peru',                   sameAs: 'https://en.wikipedia.org/wiki/Peru' },
+  { name: 'Uruguay',                sameAs: 'https://en.wikipedia.org/wiki/Uruguay' },
+  { name: 'Ecuador',                sameAs: 'https://en.wikipedia.org/wiki/Ecuador' },
+  { name: 'Costa Rica',             sameAs: 'https://en.wikipedia.org/wiki/Costa_Rica' },
+  { name: 'Panama',                 sameAs: 'https://en.wikipedia.org/wiki/Panama' },
+  { name: 'Paraguay',               sameAs: 'https://en.wikipedia.org/wiki/Paraguay' },
+  { name: 'Bolivia',                sameAs: 'https://en.wikipedia.org/wiki/Bolivia' },
+  { name: 'Venezuela',              sameAs: 'https://en.wikipedia.org/wiki/Venezuela' },
+  { name: 'Honduras',               sameAs: 'https://en.wikipedia.org/wiki/Honduras' },
+  { name: 'Guatemala',              sameAs: 'https://en.wikipedia.org/wiki/Guatemala' },
+  { name: 'India',                  sameAs: 'https://en.wikipedia.org/wiki/India' },
+  { name: 'Pakistan',               sameAs: 'https://en.wikipedia.org/wiki/Pakistan' },
+  { name: 'Bangladesh',             sameAs: 'https://en.wikipedia.org/wiki/Bangladesh' },
+  { name: 'Sri Lanka',              sameAs: 'https://en.wikipedia.org/wiki/Sri_Lanka' },
+  { name: 'Nepal',                  sameAs: 'https://en.wikipedia.org/wiki/Nepal' },
+  { name: 'Philippines',            sameAs: 'https://en.wikipedia.org/wiki/Philippines' },
+  { name: 'Vietnam',                sameAs: 'https://en.wikipedia.org/wiki/Vietnam' },
+  { name: 'Thailand',               sameAs: 'https://en.wikipedia.org/wiki/Thailand' },
+  { name: 'Indonesia',              sameAs: 'https://en.wikipedia.org/wiki/Indonesia' },
+  { name: 'Malaysia',               sameAs: 'https://en.wikipedia.org/wiki/Malaysia' },
+  { name: 'Singapore',              sameAs: 'https://en.wikipedia.org/wiki/Singapore' },
+  { name: 'South Korea',            sameAs: 'https://en.wikipedia.org/wiki/South_Korea' },
+  { name: 'Japan',                  sameAs: 'https://en.wikipedia.org/wiki/Japan' },
+  { name: 'China',                  sameAs: 'https://en.wikipedia.org/wiki/China' },
+  { name: 'Taiwan',                 sameAs: 'https://en.wikipedia.org/wiki/Taiwan' },
+  { name: 'Hong Kong',              sameAs: 'https://en.wikipedia.org/wiki/Hong_Kong' },
+  { name: 'Myanmar',                sameAs: 'https://en.wikipedia.org/wiki/Myanmar' },
+  { name: 'Cambodia',               sameAs: 'https://en.wikipedia.org/wiki/Cambodia' },
+  { name: 'Laos',                   sameAs: 'https://en.wikipedia.org/wiki/Laos' },
+  { name: 'Mongolia',               sameAs: 'https://en.wikipedia.org/wiki/Mongolia' },
+  { name: 'Bhutan',                 sameAs: 'https://en.wikipedia.org/wiki/Bhutan' },
+  { name: 'Nigeria',                sameAs: 'https://en.wikipedia.org/wiki/Nigeria' },
+  { name: 'Kenya',                  sameAs: 'https://en.wikipedia.org/wiki/Kenya' },
+  { name: 'South Africa',           sameAs: 'https://en.wikipedia.org/wiki/South_Africa' },
+  { name: 'Ghana',                  sameAs: 'https://en.wikipedia.org/wiki/Ghana' },
+  { name: 'Egypt',                  sameAs: 'https://en.wikipedia.org/wiki/Egypt' },
+  { name: 'Morocco',                sameAs: 'https://en.wikipedia.org/wiki/Morocco' },
+  { name: 'Tunisia',                sameAs: 'https://en.wikipedia.org/wiki/Tunisia' },
+  { name: 'Ethiopia',               sameAs: 'https://en.wikipedia.org/wiki/Ethiopia' },
+  { name: 'Tanzania',               sameAs: 'https://en.wikipedia.org/wiki/Tanzania' },
+  { name: 'Uganda',                 sameAs: 'https://en.wikipedia.org/wiki/Uganda' },
+  { name: 'Rwanda',                 sameAs: 'https://en.wikipedia.org/wiki/Rwanda' },
+  { name: 'Senegal',                sameAs: 'https://en.wikipedia.org/wiki/Senegal' },
+  { name: 'Cameroon',               sameAs: 'https://en.wikipedia.org/wiki/Cameroon' },
+  { name: 'Ivory Coast',            sameAs: 'https://en.wikipedia.org/wiki/Ivory_Coast' },
+  { name: 'Mozambique',             sameAs: 'https://en.wikipedia.org/wiki/Mozambique' },
+  { name: 'New Zealand',            sameAs: 'https://en.wikipedia.org/wiki/New_Zealand' },
+  { name: 'Fiji',                   sameAs: 'https://en.wikipedia.org/wiki/Fiji' },
+  { name: 'Papua New Guinea',       sameAs: 'https://en.wikipedia.org/wiki/Papua_New_Guinea' },
+  { name: 'Samoa',                  sameAs: 'https://en.wikipedia.org/wiki/Samoa' },
+  { name: 'Tonga',                  sameAs: 'https://en.wikipedia.org/wiki/Tonga' },
+  { name: 'Israel',                 sameAs: 'https://en.wikipedia.org/wiki/Israel' },
+  { name: 'UAE',                    sameAs: 'https://en.wikipedia.org/wiki/United_Arab_Emirates' },
+  { name: 'Saudi Arabia',           sameAs: 'https://en.wikipedia.org/wiki/Saudi_Arabia' },
+  { name: 'Jordan',                 sameAs: 'https://en.wikipedia.org/wiki/Jordan' },
+  { name: 'Lebanon',                sameAs: 'https://en.wikipedia.org/wiki/Lebanon' },
+  { name: 'Turkey',                 sameAs: 'https://en.wikipedia.org/wiki/Turkey' },
+  { name: 'Georgia',                sameAs: 'https://en.wikipedia.org/wiki/Georgia_(country)' },
+  { name: 'Armenia',                sameAs: 'https://en.wikipedia.org/wiki/Armenia' },
+  { name: 'Ukraine',                sameAs: 'https://en.wikipedia.org/wiki/Ukraine' },
+  { name: 'Russia',                 sameAs: 'https://en.wikipedia.org/wiki/Russia' },
+  { name: 'Kazakhstan',             sameAs: 'https://en.wikipedia.org/wiki/Kazakhstan' },
+  { name: 'Uzbekistan',             sameAs: 'https://en.wikipedia.org/wiki/Uzbekistan' },
+  { name: 'Belarus',                sameAs: 'https://en.wikipedia.org/wiki/Belarus' },
+  { name: 'Serbia',                 sameAs: 'https://en.wikipedia.org/wiki/Serbia' },
+  { name: 'Albania',                sameAs: 'https://en.wikipedia.org/wiki/Albania' },
+  { name: 'Bosnia and Herzegovina', sameAs: 'https://en.wikipedia.org/wiki/Bosnia_and_Herzegovina' },
+  { name: 'North Macedonia',        sameAs: 'https://en.wikipedia.org/wiki/North_Macedonia' },
+  { name: 'Kosovo',                 sameAs: 'https://en.wikipedia.org/wiki/Kosovo' },
+  { name: 'Montenegro',             sameAs: 'https://en.wikipedia.org/wiki/Montenegro' },
+  { name: 'Moldova',                sameAs: 'https://en.wikipedia.org/wiki/Moldova' },
 ];
 
 const descTemplates = [
   (title, company, industry) => `${company} is hiring a ${title} to join our fully remote team. We're a fast-growing ${industry} company building products used by millions worldwide.
 
 **What You'll Do:**
-• Design, build, and maintain scalable systems and features
-• Collaborate with cross-functional teams across multiple time zones
-• Write clean, well-tested, production-ready code
-• Participate in code reviews and architectural discussions
-• Mentor junior team members and contribute to engineering culture
+- Design, build, and maintain scalable systems and features
+- Collaborate with cross-functional teams across multiple time zones
+- Write clean, well-tested, production-ready code
+- Participate in code reviews and architectural discussions
+- Mentor junior team members and contribute to engineering culture
 
 **Requirements:**
-• 3+ years of relevant experience in a similar role
-• Strong problem-solving skills and attention to detail
-• Experience working in agile/scrum environments
-• Excellent written and verbal communication skills (remote-first team)
-• Passion for building products that make a real difference
+- 3+ years of relevant experience in a similar role
+- Strong problem-solving skills and attention to detail
+- Experience working in agile/scrum environments
+- Excellent written and verbal communication skills (remote-first team)
+- Passion for building products that make a real difference
 
 **Benefits:**
-• Fully remote — work from anywhere in the world
-• Competitive salary + equity package
-• Health, dental, and vision insurance
-• $2,000 home office stipend
-• Unlimited PTO + 15 company holidays
-• 401(k) with company match
-• Annual learning & development budget of $1,500
-• Team retreats twice a year`,
+- Fully remote — work from anywhere in the world
+- Competitive salary + equity package
+- Health, dental, and vision insurance
+- $2,000 home office stipend
+- Unlimited PTO + 15 company holidays
+- 401(k) with company match
+- Annual learning & development budget of $1,500
+- Team retreats twice a year`,
 
   (title, company, industry) => `Join ${company} as a ${title} and help us revolutionize the ${industry} space. This is a 100% remote position open to candidates worldwide.
 
@@ -197,26 +287,26 @@ const descTemplates = [
 As a ${title}, you will be a key player in our engineering/product organization. You'll work closely with our team to ship high-quality features and drive impact across our platform.
 
 **Responsibilities:**
-• Lead end-to-end development of major product features
-• Partner with product managers, designers, and stakeholders
-• Own technical quality and reliability of your domain
-• Drive technical direction and best practices
-• Contribute to our inclusive, remote-first engineering culture
+- Lead end-to-end development of major product features
+- Partner with product managers, designers, and stakeholders
+- Own technical quality and reliability of your domain
+- Drive technical direction and best practices
+- Contribute to our inclusive, remote-first engineering culture
 
 **What We're Looking For:**
-• Proven track record in a ${title} or similar role
-• Strong technical foundation and eagerness to learn
-• High ownership mentality — you see problems and fix them
-• Async communication skills (we're remote-first)
-• Experience with modern tools and workflows
+- Proven track record in a ${title} or similar role
+- Strong technical foundation and eagerness to learn
+- High ownership mentality — you see problems and fix them
+- Async communication skills (we're remote-first)
+- Experience with modern tools and workflows
 
 **Perks & Compensation:**
-• Market-competitive compensation + equity
-• Remote-first culture with async flexibility
-• Full benefits package (health, dental, vision)
-• $1,500/year learning budget
-• 4-day workweek option available
-• Paid parental leave (16 weeks)`,
+- Market-competitive compensation + equity
+- Remote-first culture with async flexibility
+- Full benefits package (health, dental, vision)
+- $1,500/year learning budget
+- 4-day workweek option available
+- Paid parental leave (16 weeks)`,
 
   (title, company, industry) => `${company} (${industry}) is looking for a talented ${title} to work remotely and help us scale our platform to the next level.
 
@@ -224,46 +314,42 @@ As a ${title}, you will be a key player in our engineering/product organization.
 We're on a mission to transform the ${industry} industry. As a ${title}, you'll be central to achieving that goal by building reliable, performant, and user-loved products.
 
 **Day-to-Day:**
-• Ship features end-to-end with high quality and speed
-• Work asynchronously with teammates across time zones
-• Participate in planning, estimation, and retrospectives
-• Proactively identify and resolve technical debt
-• Collaborate with design, product, and data teams
+- Ship features end-to-end with high quality and speed
+- Work asynchronously with teammates across time zones
+- Participate in planning, estimation, and retrospectives
+- Proactively identify and resolve technical debt
+- Collaborate with design, product, and data teams
 
 **You Should Have:**
-• Experience in a ${title} role or equivalent
-• Strong attention to craft — you care about quality
-• Comfort working independently in a remote environment
-• Clear communication and documentation habits
-• A growth mindset and eagerness to level up
+- Experience in a ${title} role or equivalent
+- Strong attention to craft — you care about quality
+- Comfort working independently in a remote environment
+- Clear communication and documentation habits
+- A growth mindset and eagerness to level up
 
 **Why ${company}:**
-• Truly remote-first (we've been remote since day one)
-• Transparent culture with open salary bands
-• Top-tier compensation and meaningful equity
-• Flexible hours — own your schedule
-• 30 days paid vacation globally
-• Monthly wellness stipend ($150/mo)
-• Latest MacBook Pro + accessories provided`,
+- Truly remote-first (we've been remote since day one)
+- Transparent culture with open salary bands
+- Top-tier compensation and meaningful equity
+- Flexible hours — own your schedule
+- 30 days paid vacation globally
+- Monthly wellness stipend ($150/mo)
+- Latest MacBook Pro + accessories provided`,
 ];
 
-// ── Fixed Dates ───────────────────────────────────────────────────────────────
 const FIXED_DATE_POSTED   = '2025-06-25';
 const FIXED_VALID_THROUGH = '2025-12-22';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 function pick(arr, seed) { return arr[Math.abs(seed) % arr.length]; }
 
-// ── Check if ID is an extra company job ──────────────────────────────────────
 function isExtraJob(id) { return id >= EXTRA_START_ID; }
 
 function getExtraJobCompany(id) {
-  const offset = id - EXTRA_START_ID; // 0-based
+  const offset = id - EXTRA_START_ID;
   const companyIndex = Math.floor(offset / EXTRA_JOBS_PER_COMPANY);
   return newCompanies[companyIndex];
 }
 
-// ── Main getJobData ───────────────────────────────────────────────────────────
 function getJobData(id) {
   const s1 = id * 7 + 13;
   const s3 = id * 17 + 53;
@@ -273,7 +359,6 @@ function getJobData(id) {
   const s7 = id * 41 + 83;
 
   const title      = pick(jobTitles, s1);
-  // Extra jobs: company is fixed per block; base jobs: deterministic pick
   const company    = isExtraJob(id) ? getExtraJobCompany(id) : pick(companies, id * 11 + 97);
   const location   = pick(usaStates, s3);
   const industry   = pick(industries, s4);
@@ -292,34 +377,21 @@ function getJobData(id) {
   };
 }
 
-// ── Search: find job IDs matching query ───────────────────────────────────────
-// Strategy: since data is deterministic, we scan company/title arrays to find
-// which IDs will produce matching results — O(array_size) not O(2M)
 function searchJobs(q, page, perPage) {
-  if (!q || !q.trim()) return null; // no search — use normal pagination
+  if (!q || !q.trim()) return null;
   const query = q.trim().toLowerCase();
   const results = [];
 
-  // ── 1. Match by COMPANY ──────────────────────────────────────────────────
-  // Find all company indices that match query
   const matchingCompanyIndices = [];
   companies.forEach((c, idx) => {
     if (c.toLowerCase().includes(query)) matchingCompanyIndices.push(idx);
   });
 
   if (matchingCompanyIndices.length > 0) {
-    // For base jobs (1–2M): id * 11 + 97 mod companies.length == matchingIndex
-    // Scan all IDs is too slow, so: for each matching company index,
-    // find IDs where (id * 11 + 97) % companies.length === companyIndex
     const N = companies.length;
     matchingCompanyIndices.forEach(ci => {
-      // Find first id in 1..TOTAL_JOBS where (id*11+97)%N === ci
-      // id*11 ≡ (ci - 97) mod N  → step through multiples of N
       for (let id = 1; id <= TOTAL_JOBS; id++) {
         if (Math.abs(id * 11 + 97) % N === ci) {
-          // Found first match; now every N-th id (where seed repeats) will also match
-          // But seeds are id*11+97, so period = N / gcd(11,N)
-          // Simpler: just collect up to enough results by stepping
           for (let j = id; j <= TOTAL_JOBS && results.length < 5000; j += N) {
             if (Math.abs(j * 11 + 97) % N === ci) results.push(j);
           }
@@ -328,7 +400,6 @@ function searchJobs(q, page, perPage) {
       }
     });
 
-    // ── Extra company jobs (2000001+) ──────────────────────────────────────
     newCompanies.forEach((c, idx) => {
       if (c.toLowerCase().includes(query)) {
         const start = EXTRA_START_ID + idx * EXTRA_JOBS_PER_COMPANY;
@@ -338,7 +409,6 @@ function searchJobs(q, page, perPage) {
     });
   }
 
-  // ── 2. Match by JOB TITLE ────────────────────────────────────────────────
   if (results.length === 0) {
     const matchingTitleIndices = [];
     jobTitles.forEach((t, idx) => {
@@ -354,14 +424,12 @@ function searchJobs(q, page, perPage) {
           break;
         }
       }
-      // Extra jobs title search
       for (let id = EXTRA_START_ID; id < GRAND_TOTAL && results.length < 5000; id++) {
         if (Math.abs(id * 7 + 13) % N === ti) results.push(id);
       }
     });
   }
 
-  // Sort and deduplicate
   const unique = [...new Set(results)].sort((a, b) => a - b);
   const total  = unique.length;
   const totalPages = Math.ceil(total / perPage) || 1;
@@ -371,18 +439,17 @@ function searchJobs(q, page, perPage) {
   return { ids: slice, total, totalPages, page: safePage };
 }
 
-// ── JSON-LD Schema ────────────────────────────────────────────────────────────
 function getJobSchema(job) {
   const s7 = job.id * 41 + 83;
   const salaryData = pick(salarySchema, s7);
 
   let employmentType;
   switch (job.jobType) {
-    case 'Full-time':          employmentType = 'FULL_TIME'; break;
-    case 'Part-time':          employmentType = 'PART_TIME'; break;
-    case 'Contract':           employmentType = 'CONTRACTOR'; break;
-    case 'Full-time Contract': employmentType = 'FULL_TIME'; break;
-    case 'Freelance':          employmentType = 'CONTRACTOR'; break;
+    case 'Full-time':          employmentType = 'FULL_TIME';   break;
+    case 'Part-time':          employmentType = 'PART_TIME';   break;
+    case 'Contract':           employmentType = 'CONTRACTOR';  break;
+    case 'Full-time Contract': employmentType = 'FULL_TIME';   break;
+    case 'Freelance':          employmentType = 'CONTRACTOR';  break;
     default:                   employmentType = 'FULL_TIME';
   }
 
@@ -407,15 +474,31 @@ function getJobSchema(job) {
     "hiringOrganization": { "@type": "Organization", "name": job.company },
     "jobLocation": { "@type": "Place", "address": { "@type": "PostalAddress", "addressCountry": "US" } },
     "jobLocationType": "TELECOMMUTE",
-    "applicantLocationRequirements": allCountries.map(c => ({ "@type": "Country", "name": c })),
+    "applicantLocationRequirements": allCountries.map(c => ({
+      "@type": "Country",
+      "name": c.name,
+      "sameAs": c.sameAs
+    })),
     "baseSalary": {
       "@type": "MonetaryAmount",
       "currency": "USD",
-      "value": { "@type": "QuantitativeValue", "minValue": salaryData.min, "maxValue": salaryData.max, "unitText": "YEAR" }
+      "value": {
+        "@type": "QuantitativeValue",
+        "minValue": salaryData.min,
+        "maxValue": salaryData.max,
+        "unitText": "YEAR"
+      }
     },
-    "experienceRequirements": { "@type": "OccupationalExperienceRequirements", "monthsOfExperience": monthsOfExperience },
+    "experienceRequirements": {
+      "@type": "OccupationalExperienceRequirements",
+      "monthsOfExperience": monthsOfExperience
+    },
     "industry": job.industry,
-    "identifier": { "@type": "PropertyValue", "name": "Job ID", "value": `USA-${String(job.id).padStart(7, '0')}` }
+    "identifier": {
+      "@type": "PropertyValue",
+      "name": "Job ID",
+      "value": `USA-${String(job.id).padStart(7, '0')}`
+    }
   };
 }
 
